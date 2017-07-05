@@ -5,10 +5,13 @@
     <title>Hey</title>
   </head>
   <body>
-    <h2>Please Login to view our stuff!</h2>
 
-    <a href="/login">Login</a>
+  {{#errors}}{{.}}{{/errors}}
+
     <h2>You are logged in as: {{username}}</h2>
+    <form action="/click" method="post">
+    	<input type="submit" name="clicked">I've been clicked {{clicked}} times</input>
+    </form>
 
   </body>
 </html>

@@ -24,47 +24,56 @@ app.use(session({
 
 let users = [{username: "casey", password: "apassword"}];
 let messages = [];
-
+let clicked = 0;
 app.get("/", function(req, res) {
-  if (req.session.username) {
-    res.render("index",{username: req.session.username});
+  if (!req.session.username) {
+    res.redirect('/login');
+  }else if (req.session.username){
+  	res.redirect("/home");
   }
-  	res.render("index");
 });
+app.get('/home', function(req, res){
+  res.render('index',{username: req.session.username,clicked:clicked});
+});
+
 
 app.get("/login", function(req, res) {
   res.render("login");
+});
+app.post('/click',function(req,res){
+  clicked += 1;
+  res.redirect('/home');
 });
 
 app.post("/login", function(req, res) {
   let loggedUser;
   messages = [];
 
+  req.checkBody("username", "Please Enter a valid username.").isLength({min: 5, max: 20});
+  req.checkBody("password", "Please Enter a Password.").notEmpty();
   users.forEach(function(user){
-    if (user.username === req.body.username) {
+
+    if (user.username === req.body.username && user.password === req.body.password) {
       loggedUser = user;
+  req.session.username = req.body.username;
     }
   });
-
-  req.checkBody("username", "Please Enter a valid username.").notEmpty().isLength({min: 5, max: 20});
-  req.checkBody("password", "Please Enter a Password.").notEmpty();
-  req.checkBody("password", "Invalid password and username combination.").equals(loggedUser.password);
-
   let errors = req.validationErrors();
-
+  let signupMsg = "";
   if (errors) {
     errors.forEach(function(error) {
       messages.push(error.msg);
     });
     res.render("login", {errors: messages});
-  } else {
-
+    errors = [];
+  } else if(!req.session.username){
+    users.push({username:req.body.username,password:req.body.password});
     req.session.username = req.body.username;
-
-    res.redirect("/");
+    console.log(users);
   }
+    res.redirect("/home");
 
-  // res.redirect("/");
+
 });
 
 
